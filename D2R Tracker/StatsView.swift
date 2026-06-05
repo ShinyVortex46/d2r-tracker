@@ -46,7 +46,7 @@ struct StatsView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Overview") {
+                Section {
                     HStack {
                         StatCard(title: "Total Runs", value: "\(totalRuns)")
                         StatCard(title: "Average MF", value: "\(averageMF)%")
@@ -61,42 +61,90 @@ struct StatsView: View {
                             value: String(format: "%.1f min", totalTime)
                         )
                     }
+                } header: {
+                    DiabloSectionHeader(title: "Overview")
                 }
-                Section("Most farmed run type") {
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+
+                Section {
                     if let runType = mostFarmedRunType {
                         HStack {
                             Text(runType)
-                                .font(.headline)
+                                .font(Theme.cardTitle)
+                                .foregroundStyle(Theme.C.textParchment)
                             Spacer()
                             Text("\(runs.filter { $0.runTypeName == runType }.count) runs")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Theme.C.textMuted)
                         }
                     } else {
                         Text("No runs yet")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Theme.C.textMuted)
                     }
+                } header: {
+                    DiabloSectionHeader(title: "Most Farmed")
                 }
-                Section("Runs by Type") {
+                .listRowBackground(Theme.C.surfaceCard)
+                .listRowSeparatorTint(Theme.C.borderStone)
+
+                Section {
                     Chart(topRunTypes, id: \.self) { runType in
                         BarMark(
                             x: .value("Run Type", runType),
                             y: .value("Runs", runs.filter { $0.runTypeName == runType }.count)
                         )
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Theme.C.goldPrimary, Theme.C.goldBright],
+                                startPoint: .bottom,
+                                endPoint: .top
+                            )
+                        )
+                        .cornerRadius(4)
                     }
+                    .chartXAxis {
+                        AxisMarks { _ in
+                            AxisValueLabel()
+                                .foregroundStyle(Theme.C.textMuted)
+                        }
+                    }
+                    .chartYAxis {
+                        AxisMarks { _ in
+                            AxisGridLine()
+                                .foregroundStyle(Theme.C.borderStone.opacity(0.5))
+                            AxisValueLabel()
+                                .foregroundStyle(Theme.C.textMuted)
+                        }
+                    }
+                    .chartBackground { _ in Theme.C.surfaceCard }
                     .frame(height: 180)
+                    .padding(.vertical, 4)
+                } header: {
+                    DiabloSectionHeader(title: "Runs by Type")
                 }
-                Section("By Run Type") {
+                .listRowBackground(Theme.C.surfaceCard)
+                .listRowSeparatorTint(Theme.C.borderStone)
+
+                Section {
                     ForEach(topRunTypes, id: \.self) { runType in
                         let count = runs.filter { $0.runTypeName == runType }.count
                         HStack {
                             Text(runType)
+                                .font(Theme.cardTitle)
+                                .foregroundStyle(Theme.C.textParchment)
                             Spacer()
                             Text("\(count) runs")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Theme.C.textMuted)
                         }
                     }
+                } header: {
+                    DiabloSectionHeader(title: "By Run Type")
                 }
+                .listRowBackground(Theme.C.surfaceCard)
+                .listRowSeparatorTint(Theme.C.borderStone)
             }
+            .scrollContentBackground(.hidden)
+            .background(Theme.C.backgroundDeep)
             .navigationTitle("Stats")
         }
     }
@@ -107,17 +155,18 @@ struct StatCard: View {
     let value: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title.uppercased())
+                .font(Theme.sectionHeader)
+                .foregroundStyle(Theme.C.textMuted)
+                .tracking(1.2)
             Text(value)
-                .font(.title2)
-                .fontWeight(.semibold)
+                .font(Theme.statValue)
+                .foregroundStyle(Theme.C.goldBright)
+                .shadow(color: Theme.C.goldPrimary.opacity(0.3), radius: 4)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .cornerRadius(12)
+        .padding(14)
+        .stoneCard()
     }
 }

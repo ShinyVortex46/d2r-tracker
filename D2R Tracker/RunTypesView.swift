@@ -14,9 +14,15 @@ struct RunTypesView: View {
         List {
             ForEach(runTypes) { runType in
                 Text(runType.name)
+                    .font(Theme.cardTitle)
+                    .foregroundStyle(Theme.C.textParchment)
             }
             .onDelete(perform: attemptDelete)
+            .listRowBackground(Theme.C.surfaceCard)
+            .listRowSeparatorTint(Theme.C.borderStone)
         }
+        .scrollContentBackground(.hidden)
+        .background(Theme.C.backgroundDeep)
         .navigationTitle("Run Types")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

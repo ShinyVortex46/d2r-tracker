@@ -31,10 +31,16 @@ struct SettingsView: View {
                     NavigationLink("Edit Run Types") {
                         RunTypesView()
                     }
+                    .foregroundStyle(Theme.C.textParchment)
                     NavigationLink("Adjust Recommended MF Values") {
                         RecommendedMFView()
                     }
+                    .foregroundStyle(Theme.C.textParchment)
+                } header: {
+                    DiabloSectionHeader(title: "Configuration")
                 }
+                .listRowBackground(Theme.C.surfaceCard)
+                .listRowSeparatorTint(Theme.C.borderStone)
 
                 Section {
                     Button(role: .destructive) {
@@ -42,13 +48,25 @@ struct SettingsView: View {
                     } label: {
                         HStack {
                             Spacer()
+                            Image(systemName: "flame.fill")
+                                .foregroundStyle(Theme.C.bloodRedBright)
                             Text("Clear All Runs")
-                                .fontWeight(.semibold)
+                                .font(Theme.cardTitle)
+                                .foregroundStyle(Theme.C.bloodRedBright)
                             Spacer()
                         }
                     }
                 }
+                .listRowBackground(
+                    ZStack {
+                        Theme.C.bloodRed.opacity(0.15)
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Theme.C.bloodRed.opacity(0.5), lineWidth: 1)
+                    }
+                )
             }
+            .scrollContentBackground(.hidden)
+            .background(Theme.C.backgroundDeep)
             .navigationTitle("Options")
             .confirmationDialog(
                 "Clear All Runs?",
@@ -79,6 +97,8 @@ struct RecommendedMFView: View {
                 ForEach(runTypes) { rt in
                     HStack {
                         Text(rt.name)
+                            .font(Theme.cardTitle)
+                            .foregroundStyle(Theme.C.textParchment)
                         Spacer()
                         TextField(
                             "\(rt.defaultRecommendedMF > 0 ? rt.defaultRecommendedMF : 0)",
@@ -90,14 +110,20 @@ struct RecommendedMFView: View {
                         .keyboardType(.numberPad)
                         .multilineTextAlignment(.trailing)
                         .frame(width: 60)
+                        .foregroundStyle(Theme.C.goldBright)
                         Text("%")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Theme.C.textMuted)
                     }
                 }
             } footer: {
                 Text("Changes affect the MF threshold icons on all runs.")
+                    .foregroundStyle(Theme.C.textMuted)
             }
+            .listRowBackground(Theme.C.surfaceCard)
+            .listRowSeparatorTint(Theme.C.borderStone)
         }
+        .scrollContentBackground(.hidden)
+        .background(Theme.C.backgroundDeep)
         .navigationTitle("Recommended MF")
         .navigationBarBackButtonHidden(true)
         .toolbar {

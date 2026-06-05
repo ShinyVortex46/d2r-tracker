@@ -111,33 +111,39 @@ struct ContentView: View {
                 ForEach(sortedSessions) { session in
                     NavigationLink(destination: SessionDetailView(session: session)) {
                         VStack(alignment: .leading, spacing: 2) {
-                            HStack {
+                            HStack(alignment: .center) {
                                 Text(session.name)
-                                    .font(.headline)
+                                    .font(Theme.cardTitle)
+                                    .foregroundStyle(Theme.C.textParchment)
                                 Spacer()
                                 if session.isActive {
-                                    Text("Active")
-                                        .font(.caption)
-                                        .fontWeight(.semibold)
-                                        .foregroundStyle(.green)
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(.green.opacity(0.15))
-                                        .clipShape(Capsule())
+                                    Text("ACTIVE")
+                                        .font(Theme.badge)
+                                        .foregroundStyle(Theme.C.bloodRedBright)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 3)
+                                        .background(Theme.C.bloodRed.opacity(0.25))
+                                        .clipShape(ChiselRect(cut: 4))
+                                        .overlay(ChiselRect(cut: 4).stroke(Theme.C.bloodRed, lineWidth: 1))
                                 }
                             }
                             Text("\(session.runs.count) run\(session.runs.count == 1 ? "" : "s")")
                                 .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Theme.C.textMuted)
                         }
+                        .padding(.vertical, 4)
                     }
+                    .listRowBackground(Theme.C.surfaceCard)
                 }
                 .onDelete { indexSet in
                     for index in indexSet {
                         modelContext.delete(sortedSessions[index])
                     }
                 }
+                .listRowSeparatorTint(Theme.C.borderStone)
             }
+            .scrollContentBackground(.hidden)
+            .background(Theme.C.backgroundDeep)
             .navigationTitle("D2 Run Tracker")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -159,6 +165,7 @@ struct ContentView: View {
             SessionSortPickerView(sortOption: $sessionSortOption, sortAscending: $sortAscending)
                 .presentationDetents([.height(160)])
                 .presentationDragIndicator(.visible)
+                .presentationBackground(Theme.C.surfaceRaised)
         }
     }
 }
@@ -171,11 +178,16 @@ struct SessionSortPickerView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("Sort By")
-                .font(.headline)
+            Text("SORT BY")
+                .font(Theme.sectionHeader)
+                .foregroundStyle(Theme.C.textMuted)
+                .tracking(1.8)
                 .padding(.horizontal)
-                .padding(.top, 16)
+                .padding(.top, 20)
                 .padding(.bottom, 8)
+            GoldDivider()
+                .padding(.horizontal, 16)
+                .padding(.bottom, 4)
             ForEach(SessionSortOption.allCases, id: \.self) { option in
                 Button {
                     if sortOption == option {
@@ -187,15 +199,20 @@ struct SessionSortPickerView: View {
                 } label: {
                     HStack {
                         Text(option.rawValue)
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(Theme.C.textParchment)
                         Spacer()
                         if sortOption == option {
                             Image(systemName: sortAscending ? "chevron.up" : "chevron.down")
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(Theme.C.goldPrimary)
                         }
                     }
                     .padding(.horizontal)
-                    .padding(.vertical, 12)
+                    .padding(.vertical, 14)
+                }
+                if option != SessionSortOption.allCases.last {
+                    Divider()
+                        .background(Theme.C.borderStone)
+                        .padding(.horizontal, 16)
                 }
             }
             Spacer()
@@ -238,20 +255,21 @@ struct SessionDetailView: View {
                     HStack {
                         VStack(alignment: .leading) {
                             Text(run.runTypeName)
-                                .font(.headline)
+                                .font(Theme.cardTitle)
+                                .foregroundStyle(Theme.C.textParchment)
                             Text(
                                 "\(String(format: "%.2f", run.durationInMinutes)) min · \(run.magicFind)% MF"
                             )
                             .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Theme.C.textMuted)
                             Text(run.drops)
                                 .font(.caption)
-                                .foregroundStyle(.tertiary)
+                                .foregroundStyle(Theme.C.textMuted.opacity(0.6))
                             Text(
                                 "\(run.date, style: .relative) ago · \(run.date.formatted(date: .abbreviated, time: .shortened))"
                             )
                             .font(.caption2)
-                            .foregroundStyle(.tertiary)
+                            .foregroundStyle(Theme.C.textMuted.opacity(0.6))
                         }
                         Spacer()
                         let threshold = mfSettings.effectiveMF(
@@ -263,17 +281,21 @@ struct SessionDetailView: View {
                                 ? "checkmark.circle.fill"
                                 : "exclamationmark.triangle.fill"
                         )
-                        .foregroundStyle(run.magicFind >= threshold ? .green : .yellow)
+                        .foregroundStyle(run.magicFind >= threshold ? Theme.C.emerald : Theme.C.amberWarning)
                         .font(.title3)
                     }
                 }
+                .listRowBackground(Theme.C.surfaceCard)
             }
             .onDelete { indexSet in
                 for index in indexSet {
                     modelContext.delete(sortedRuns[index])
                 }
             }
+            .listRowSeparatorTint(Theme.C.borderStone)
         }
+        .scrollContentBackground(.hidden)
+        .background(Theme.C.backgroundDeep)
         .navigationTitle(session.name)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -286,6 +308,7 @@ struct SessionDetailView: View {
             SortPickerView(sortOption: $sortOption, sortAscending: $sortAscending)
                 .presentationDetents([.height(200)])
                 .presentationDragIndicator(.visible)
+                .presentationBackground(Theme.C.surfaceRaised)
         }
     }
 }
@@ -298,11 +321,16 @@ struct SortPickerView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("Sort By")
-                .font(.headline)
+            Text("SORT BY")
+                .font(Theme.sectionHeader)
+                .foregroundStyle(Theme.C.textMuted)
+                .tracking(1.8)
                 .padding(.horizontal)
-                .padding(.top, 16)
+                .padding(.top, 20)
                 .padding(.bottom, 8)
+            GoldDivider()
+                .padding(.horizontal, 16)
+                .padding(.bottom, 4)
             ForEach(SortOption.allCases, id: \.self) { option in
                 Button {
                     if sortOption == option {
@@ -314,15 +342,20 @@ struct SortPickerView: View {
                 } label: {
                     HStack {
                         Text(option.rawValue)
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(Theme.C.textParchment)
                         Spacer()
                         if sortOption == option {
                             Image(systemName: sortAscending ? "chevron.up" : "chevron.down")
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(Theme.C.goldPrimary)
                         }
                     }
                     .padding(.horizontal)
-                    .padding(.vertical, 12)
+                    .padding(.vertical, 14)
+                }
+                if option != SortOption.allCases.last {
+                    Divider()
+                        .background(Theme.C.borderStone)
+                        .padding(.horizontal, 16)
                 }
             }
             Spacer()
@@ -434,7 +467,7 @@ struct AddRunView: View {
                         Section("Run Type") {
                             if sessionIsLocked {
                                 Text(displayedRunTypeName)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Theme.C.textMuted)
                             } else {
                                 Picker("Run Type", selection: $selectedRunTypeName) {
                                     ForEach(runTypes) { rt in
@@ -448,24 +481,38 @@ struct AddRunView: View {
                                 .keyboardType(.numberPad)
                         }
                     }
+                    .scrollContentBackground(.hidden)
+                    .background(Theme.C.backgroundDeep)
                 case .active:
                     VStack(spacing: 16) {
                         Spacer()
                         Text("\(displayedRunTypeName)  ·  \(magicFind)% MF")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .font(Theme.sectionHeader)
+                            .foregroundStyle(Theme.C.textMuted)
+                            .tracking(1.5)
+                        GoldDivider()
+                            .frame(width: 200)
                         Text(formattedTime)
-                            .font(.system(size: 64, weight: .thin, design: .monospaced))
+                            .font(Theme.timerLarge)
+                            .foregroundStyle(Theme.C.goldBright)
+                            .monospacedDigit()
+                            .shadow(color: Theme.C.goldPrimary.opacity(0.5), radius: 12, x: 0, y: 0)
                         Spacer()
                     }
+                    .frame(maxWidth: .infinity)
+                    .background(Theme.C.backgroundDeep)
                 case .postRun:
                     VStack(spacing: 0) {
                         VStack(spacing: 6) {
-                            Text("Run Complete")
-                                .font(.headline)
-                                .foregroundStyle(.secondary)
+                            Text("RUN COMPLETE")
+                                .font(Theme.sectionHeader)
+                                .foregroundStyle(Theme.C.textMuted)
+                                .tracking(1.8)
+                            GoldDivider()
+                                .frame(width: 160)
                             Text(formattedTime)
-                                .font(.system(size: 48, weight: .semibold, design: .monospaced))
+                                .font(Theme.exocet(48))
+                                .foregroundStyle(Theme.C.goldPrimary)
                         }
                         .padding(.vertical, 28)
                         Form {
@@ -473,12 +520,16 @@ struct AddRunView: View {
                                 TextField("Leave empty for nothing", text: $drops)
                             }
                         }
+                        .scrollContentBackground(.hidden)
+                        .background(Theme.C.backgroundDeep)
                     }
+                    .background(Theme.C.backgroundDeep)
                 }
             }
             .navigationTitle(
                 phase == .setup ? "New Run" : phase == .active ? "Run in Progress" : "Save Run"
             )
+            .background(Theme.C.backgroundDeep)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { stopTimer(); dismiss() }
@@ -494,6 +545,7 @@ struct AddRunView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .buttonStyle(.borderedProminent)
+                        .tint(Theme.C.goldPrimary)
                         .controlSize(.large)
                         .padding()
                     case .active:
@@ -503,7 +555,7 @@ struct AddRunView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .buttonStyle(.borderedProminent)
-                        .tint(.red)
+                        .tint(Theme.C.bloodRedBright)
                         .controlSize(.large)
                         .padding()
                     case .postRun:
@@ -511,22 +563,25 @@ struct AddRunView: View {
                             Button("Save") { saveRun() }
                                 .frame(maxWidth: .infinity)
                                 .buttonStyle(.borderedProminent)
+                                .tint(Theme.C.goldPrimary)
                                 .controlSize(.large)
                             Button("Save & New") { saveAndNew() }
                                 .frame(maxWidth: .infinity)
                                 .buttonStyle(.bordered)
+                                .tint(Theme.C.goldPrimary)
                                 .controlSize(.large)
                             Button("Save and End Session") {
                                 showEndSessionConfirmation = true
                             }
                             .frame(maxWidth: .infinity)
                             .buttonStyle(.bordered)
+                            .tint(Theme.C.bloodRedBright)
                             .controlSize(.large)
-                            .foregroundStyle(.red)
                         }
                         .padding()
                     }
                 }
+                .background(Theme.C.backgroundDeep.opacity(0.95))
             }
             .confirmationDialog(
                 "End Session?",
@@ -598,6 +653,8 @@ struct EditRunView: View {
                 TextField("Leave empty for \"nothing\"", text: $drops)
             }
         }
+        .scrollContentBackground(.hidden)
+        .background(Theme.C.backgroundDeep)
         .navigationTitle("Edit Run")
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
