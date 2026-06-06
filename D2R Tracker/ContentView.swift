@@ -17,29 +17,6 @@ enum SessionSortOption: String, CaseIterable {
 // MARK: - Models
 
 @Model
-class DiabloRun {
-    @Attribute(originalName: "bossRawValue") var runTypeName: String
-    var duration: Int
-    var magicFind: Int
-    var drops: String
-    var date: Date
-    var startDate: Date?
-    var session: DiabloSession?
-
-    init(runTypeName: String, duration: Int, magicFind: Int, drops: String, startDate: Date? = nil, date: Date = .now) {
-        self.runTypeName = runTypeName
-        self.duration = duration
-        self.magicFind = magicFind
-        self.drops = drops
-        self.startDate = startDate
-        self.date = date
-        self.session = nil
-    }
-
-    var durationInMinutes: Double { Double(duration) / 60.0 }
-}
-
-@Model
 class DiabloSession {
     var name: String
     var runTypeName: String
@@ -262,9 +239,16 @@ struct SessionDetailView: View {
                             )
                             .font(.subheadline)
                             .foregroundStyle(Theme.C.textMuted)
-                            Text(run.drops)
-                                .font(.caption)
-                                .foregroundStyle(Theme.C.textMuted.opacity(0.6))
+                            if run.drops.isEmpty {
+                                Text("No drops")
+                                    .font(.caption)
+                                    .foregroundStyle(Theme.C.textMuted.opacity(0.4))
+                                    .italic()
+                            } else {
+                                Text(run.drops.joined(separator: ", "))
+                                    .font(.caption)
+                                    .foregroundStyle(Theme.C.textMuted.opacity(0.6))
+                            }
                             Text(
                                 "\(run.date, style: .relative) ago · \(run.date.formatted(date: .abbreviated, time: .shortened))"
                             )
@@ -378,7 +362,8 @@ struct AddRunView: View {
     @State private var phase: RunPhase = .setup
     @State private var selectedRunTypeName: String = ""
     @State private var magicFind: String = ""
-    @State private var drops: String = ""
+    @State private var drops: [String] = []
+    @State private var showDropsPicker: Bool = false
     @State private var elapsedSeconds: Int = 0
     @State private var timer: Timer? = nil
     @State private var runStartDate: Date = Date()
@@ -415,7 +400,7 @@ struct AddRunView: View {
             runTypeName: displayedRunTypeName,
             duration: elapsedSeconds,
             magicFind: Int(magicFind) ?? 0,
-            drops: drops.isEmpty ? "Nothing" : drops,
+            drops: drops,
             startDate: runStartDate
         )
         lastRunType = displayedRunTypeName
@@ -447,7 +432,7 @@ struct AddRunView: View {
 
     func saveAndNew() {
         saveRunData()
-        drops = ""
+        drops = []
         elapsedSeconds = 0
         withAnimation(.easeInOut(duration: 0.25)) { phase = .setup }
     }
@@ -517,7 +502,12 @@ struct AddRunView: View {
                         .padding(.vertical, 28)
                         Form {
                             Section("Notable Drops") {
-                                TextField("Leave empty for nothing", text: $drops)
+                                DropsChipRow(
+                                    drops: drops,
+                                    onRemove: { name in drops.removeAll { $0 == name } },
+                                    onAddTapped: { showDropsPicker = true }
+                                )
+                                .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
                             }
                         }
                         .scrollContentBackground(.hidden)
@@ -593,6 +583,9 @@ struct AddRunView: View {
             } message: {
                 Text("This will save the run and mark the session as complete.")
             }
+            .sheet(isPresented: $showDropsPicker) {
+                DropsPickerView(selectedDrops: $drops)
+            }
             .interactiveDismissDisabled(phase == .active)
             .onAppear {
                 if let active = activeSession {
@@ -619,7 +612,8 @@ struct EditRunView: View {
     @State var runTypeName: String
     @State var duration: String
     @State var magicFind: String
-    @State var drops: String
+    @State var drops: [String]
+    @State private var showDropsPicker: Bool = false
 
     init(run: DiabloRun) {
         self.run = run
@@ -650,19 +644,27 @@ struct EditRunView: View {
                     .keyboardType(.numberPad)
             }
             Section("Drops") {
-                TextField("Leave empty for \"nothing\"", text: $drops)
+                DropsChipRow(
+                    drops: drops,
+                    onRemove: { name in drops.removeAll { $0 == name } },
+                    onAddTapped: { showDropsPicker = true }
+                )
+                .listRowInsets(EdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12))
             }
         }
         .scrollContentBackground(.hidden)
         .background(Theme.C.backgroundDeep)
         .navigationTitle("Edit Run")
+        .sheet(isPresented: $showDropsPicker) {
+            DropsPickerView(selectedDrops: $drops)
+        }
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Save") {
                     run.runTypeName = runTypeName
                     run.duration = Int(duration) ?? run.duration
                     run.magicFind = Int(magicFind) ?? run.magicFind
-                    run.drops = drops.isEmpty ? run.drops : drops
+                    run.drops = drops
                     dismiss()
                 }
             }

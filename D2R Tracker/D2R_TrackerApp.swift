@@ -9,7 +9,7 @@ struct D2R_TrackerApp: App {
 
     init() {
         do {
-            container = try ModelContainer(for: DiabloRun.self, RunType.self, DiabloSession.self)
+            container = try ModelContainer(for: DiabloRun.self, DiabloSession.self, RunType.self)
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }
